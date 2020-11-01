@@ -3,6 +3,7 @@ package dslabs.kvstore;
 import dslabs.framework.Application;
 import dslabs.framework.Command;
 import dslabs.framework.Result;
+import java.util.HashMap;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -61,23 +62,26 @@ public class KVStore implements Application {
         @NonNull private final String value;
     }
 
-    // Your code here...
+    private final HashMap<String, String> kvStore = new HashMap<>();
 
     @Override
     public KVStoreResult execute(Command command) {
         if (command instanceof Get) {
             Get g = (Get) command;
-            // Your code here...
+            String v = kvStore.get(g.key);
+            return v == null ? new KeyNotFound() : new GetResult(v);
         }
 
         if (command instanceof Put) {
             Put p = (Put) command;
-            // Your code here...
+            kvStore.put(p.key, p.value);
+            return new PutOk();
         }
 
         if (command instanceof Append) {
             Append a = (Append) command;
-            // Your code here...
+            String v = kvStore.merge(a.key, a.value, String::concat);
+            return new AppendResult(v);
         }
 
         throw new IllegalArgumentException();
